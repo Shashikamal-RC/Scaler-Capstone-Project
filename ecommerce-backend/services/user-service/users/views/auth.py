@@ -1,26 +1,20 @@
-from rest_framework import status, generics, permissions
+"""
+Authentication views.
+Handles user registration, login, logout, and token refresh.
+"""
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenRefreshView
-from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 
-from .serializers import (
+from ..serializers import (
     RegisterSerializer,
     LoginSerializer,
     TokenResponseSerializer,
-    UserSerializer,
-    UserUpdateSerializer,
-    generate_tokens_for_user
+    generate_tokens_for_user,
 )
 
-User = get_user_model()
-
-
-# ==============================================================================
-# AUTHENTICATION VIEWS
-# ==============================================================================
 
 class RegisterView(APIView):
     """
@@ -154,66 +148,3 @@ class LogoutView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-
-# ==============================================================================
-# USER PROFILE VIEWS
-# ==============================================================================
-
-class CurrentUserView(APIView):
-    """
-    API endpoint for current user profile.
-    
-    GET /api/users/me - Get current user profile
-    PUT /api/users/me - Update current user profile
-    PATCH /api/users/me - Partial update current user profile
-    """
-    permission_classes = [permissions.IsAuthenticated]
-    
-    @extend_schema(
-        responses={200: UserSerializer},
-        tags=['User Profile'],
-        description="Get the authenticated user's profile information."
-    )
-    def get(self, request):
-        """Get current user profile."""
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
-    
-    @extend_schema(
-        request=UserUpdateSerializer,
-        responses={200: UserSerializer},
-        tags=['User Profile'],
-        description="Update the authenticated user's profile information."
-    )
-    def put(self, request):
-        """Update current user profile (full update)."""
-        serializer = UserUpdateSerializer(
-            request.user,
-            data=request.data,
-            partial=False
-        )
-        if serializer.is_valid():
-            serializer.save()
-            user_serializer = UserSerializer(request.user)
-            return Response(user_serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    @extend_schema(
-        request=UserUpdateSerializer,
-        responses={200: UserSerializer},
-        tags=['User Profile'],
-        description="Partially update the authenticated user's profile information."
-    )
-    def patch(self, request):
-        """Update current user profile (partial update)."""
-        serializer = UserUpdateSerializer(
-            request.user,
-            data=request.data,
-            partial=True
-        )
-        if serializer.is_valid():
-            serializer.save()
-            user_serializer = UserSerializer(request.user)
-            return Response(user_serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

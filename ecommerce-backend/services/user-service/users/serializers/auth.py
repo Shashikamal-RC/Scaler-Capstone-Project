@@ -1,38 +1,14 @@
+"""
+Authentication-related serializers.
+Handles user registration, login, and token generation.
+"""
 from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User, UserRole, UserAddress
 
+from ..models import User, UserRole
 
-# ==============================================================================
-# USER SERIALIZER (Basic)
-# ==============================================================================
-
-class UserSerializer(serializers.ModelSerializer):
-    """
-    Basic User serializer for profile display.
-    """
-    full_name = serializers.CharField(source='get_full_name', read_only=True)
-    roles = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = User
-        fields = [
-            'id', 'email', 'first_name', 'last_name', 'full_name',
-            'phone_number', 'is_active', 'is_verified', 'roles',
-            'created_at', 'updated_at'
-        ]
-        read_only_fields = ['id', 'is_active', 'is_verified', 'created_at', 'updated_at']
-    
-    def get_roles(self, obj):
-        """Get user roles as a list of role names."""
-        return [role.name for role in obj.roles.all()]
-
-
-# ==============================================================================
-# REGISTER SERIALIZER
-# ==============================================================================
 
 class RegisterSerializer(serializers.ModelSerializer):
     """
@@ -112,10 +88,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-# ==============================================================================
-# LOGIN SERIALIZER
-# ==============================================================================
-
 class LoginSerializer(serializers.Serializer):
     """
     Serializer for user login.
@@ -160,10 +132,6 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
-# ==============================================================================
-# TOKEN RESPONSE SERIALIZER
-# ==============================================================================
-
 class TokenResponseSerializer(serializers.Serializer):
     """
     Serializer for JWT token response.
@@ -171,7 +139,12 @@ class TokenResponseSerializer(serializers.Serializer):
     """
     access = serializers.CharField(read_only=True)
     refresh = serializers.CharField(read_only=True)
-    user = UserSerializer(read_only=True)
+    user = serializers.SerializerMethodField()
+    
+    def get_user(self, obj):
+        """Get user data using UserSerializer."""
+        from .profile import UserSerializer
+        return UserSerializer(obj.get('user')).data
 
 
 def generate_tokens_for_user(user):
@@ -179,6 +152,8 @@ def generate_tokens_for_user(user):
     Helper function to generate JWT tokens for a user.
     Returns dict with access token, refresh token, and user data.
     """
+    from .profile import UserSerializer
+    
     refresh = RefreshToken.for_user(user)
     
     return {
@@ -186,26 +161,3 @@ def generate_tokens_for_user(user):
         'refresh': str(refresh),
         'user': UserSerializer(user).data
     }
-
-
-# ==============================================================================
-# USER UPDATE SERIALIZER
-# ==============================================================================
-
-class UserUpdateSerializer(serializers.ModelSerializer):
-    """
-    Serializer for updating user profile.
-    Allows updating basic profile information.
-    """
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'phone_number']
-    
-    def validate_phone_number(self, value):
-        """Validate phone number uniqueness (excluding current user)."""
-        user = self.instance
-        if value and User.objects.filter(phone_number=value).exclude(id=user.id).exists():
-            raise serializers.ValidationError(
-                "A user with this phone number already exists."
-            )
-        return value
