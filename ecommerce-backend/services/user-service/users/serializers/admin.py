@@ -11,19 +11,24 @@ class AdminUserListSerializer(serializers.ModelSerializer):
     """Serializer for listing users (admin view)."""
     full_name = serializers.CharField(source='get_full_name', read_only=True)
     roles = serializers.SerializerMethodField()
+    address_count = serializers.SerializerMethodField()
     
     class Meta:
         model = User
         fields = [
             'id', 'email', 'first_name', 'last_name', 'full_name',
             'phone_number', 'is_active', 'is_verified', 'is_staff',
-            'roles', 'created_at', 'last_login'
+            'roles', 'address_count', 'created_at', 'last_login'
         ]
         read_only_fields = ['id', 'created_at', 'last_login']
     
     def get_roles(self, obj):
         """Get list of role names for the user."""
         return [role.name for role in obj.roles.all()]
+    
+    def get_address_count(self, obj):
+        """Get count of user addresses."""
+        return obj.addresses.count()
 
 
 class AdminUserDetailSerializer(serializers.ModelSerializer):
