@@ -463,3 +463,94 @@ class PasswordResetToken(models.Model):
         count = expired_tokens.count()
         expired_tokens.delete()
         return count
+
+
+# ==============================================================================
+# EMAIL VERIFICATION TOKEN MODEL
+# ==============================================================================
+
+class EmailVerificationToken(models.Model):
+    """
+    Stores email verification tokens for new user registrations.
+    Tokens are used to verify user email addresses.
+    """
+    
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='email_verification_tokens',
+        help_text="User associated with this verification token"
+    )
+    
+    token = models.CharField(
+        max_length=64,
+        unique=True,
+        help_text="Unique verification token"
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When the token was created"
+    )
+    
+    expires_at = models.DateTimeField(
+        help_text="When the token expires"
+    )
+    
+    is_used = models.BooleanField(
+        default=False,
+        help_text="Whether the token has been used"
+    )
+    
+    used_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the token was used"
+    )
+    
+    class Meta:
+        db_table = 'email_verification_tokens'
+        verbose_name = 'Email Verification Token'
+        verbose_name_plural = 'Email Verification Tokens'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['token']),
+            models.Index(fields=['expires_at']),
+        ]
+    
+    def __str__(self):
+        return f"Verification token for {self.user.email} - {'Used' if self.is_used else 'Active'}"
+    
+    def save(self, *args, **kwargs):
+        """Override save to auto-generate token and set expiration."""
+        if not self.token:
+            self.token = secrets.token_urlsafe(32)
+        if not self.expires_at:
+            # Email verification tokens expire in 24 hours
+            self.expires_at = timezone.now() + timedelta(hours=24)
+        super().save(*args, **kwargs)
+    
+    def is_valid(self):
+        """Check if token is valid (not expired and not used)."""
+        return not self.is_used and timezone.now() < self.expires_at
+    
+    def mark_as_used(self):
+        """Mark token as used."""
+        self.is_used = True
+        self.used_at = timezone.now()
+        self.save(update_fields=['is_used', 'used_at'])
+    
+    @classmethod
+    def cleanup_expired(cls):
+        """Delete expired tokens (call this periodically)."""
+        expired_tokens = cls.objects.filter(expires_at__lt=timezone.now())
+        count = expired_tokens.count()
+        expired_tokens.delete()
+        return count

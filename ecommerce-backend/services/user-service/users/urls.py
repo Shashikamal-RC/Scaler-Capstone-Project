@@ -10,6 +10,8 @@ from .views import (
     PasswordResetRequestView,
     PasswordResetConfirmView,
     ChangePasswordView,
+    VerifyEmailView,
+    ResendVerificationEmailView,
 )
 
 app_name = 'users'
@@ -24,6 +26,10 @@ urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # Email verification endpoints
+    path('auth/verify-email/', VerifyEmailView.as_view(), name='verify_email'),
+    path('auth/resend-verification/', ResendVerificationEmailView.as_view(), name='resend_verification'),
     
     # Password management endpoints
     path('auth/password-reset-request/', PasswordResetRequestView.as_view(), name='password_reset_request'),

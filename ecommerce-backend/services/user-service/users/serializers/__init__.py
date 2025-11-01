@@ -21,6 +21,10 @@ from .password import (
     PasswordResetConfirmSerializer,
     ChangePasswordSerializer,
 )
+from .verification import (
+    EmailVerificationSerializer,
+    ResendVerificationSerializer,
+)
 
 __all__ = [
     # Authentication
@@ -41,4 +45,8 @@ __all__ = [
     'PasswordResetRequestSerializer',
     'PasswordResetConfirmSerializer',
     'ChangePasswordSerializer',
+    
+    # Email Verification
+    'EmailVerificationSerializer',
+    'ResendVerificationSerializer',
 ]

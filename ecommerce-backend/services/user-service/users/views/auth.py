@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiResponse
+import secrets
 
 from ..serializers import (
     RegisterSerializer,
@@ -14,6 +15,8 @@ from ..serializers import (
     TokenResponseSerializer,
     generate_tokens_for_user,
 )
+from ..models import EmailVerificationToken
+from ..utils import send_email_verification_email
 
 
 class RegisterView(APIView):
@@ -33,7 +36,7 @@ class RegisterView(APIView):
             400: OpenApiResponse(description="Bad Request - Validation errors")
         },
         tags=['Authentication'],
-        description="Register a new user account. Automatically assigns CUSTOMER role and returns JWT tokens."
+        description="Register a new user account. Automatically assigns CUSTOMER role, sends verification email, and returns JWT tokens."
     )
     def post(self, request):
         """Register a new user."""
@@ -43,7 +46,21 @@ class RegisterView(APIView):
             # Create user
             user = serializer.save()
             
-            # Generate tokens
+            # Generate verification token and send email
+            token = secrets.token_urlsafe(32)
+            EmailVerificationToken.objects.create(
+                user=user,
+                token=token
+            )
+            
+            # Send verification email
+            send_email_verification_email(
+                user_email=user.email,
+                verification_token=token,
+                user_name=user.get_full_name()
+            )
+            
+            # Generate JWT tokens
             token_data = generate_tokens_for_user(user)
             
             return Response(

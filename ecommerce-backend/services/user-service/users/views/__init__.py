@@ -18,6 +18,10 @@ from .password import (
     PasswordResetConfirmView,
     ChangePasswordView,
 )
+from .verification import (
+    VerifyEmailView,
+    ResendVerificationEmailView,
+)
 
 __all__ = [
     # Authentication
@@ -35,4 +39,8 @@ __all__ = [
     'PasswordResetRequestView',
     'PasswordResetConfirmView',
     'ChangePasswordView',
+    
+    # Email Verification
+    'VerifyEmailView',
+    'ResendVerificationEmailView',
 ]

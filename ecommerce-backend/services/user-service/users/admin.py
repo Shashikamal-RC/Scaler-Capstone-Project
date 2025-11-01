@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
-from .models import User, UserRole, UserRoleMapping, UserAddress, PasswordResetToken
+from .models import User, UserRole, UserRoleMapping, UserAddress, PasswordResetToken, EmailVerificationToken
 
 
 # ==============================================================================
@@ -214,3 +214,62 @@ class PasswordResetTokenAdmin(admin.ModelAdmin):
             f"Successfully deleted {count} expired token(s)."
         )
     cleanup_expired_tokens.short_description = "Delete expired tokens"
+
+
+# ==============================================================================
+# EMAIL VERIFICATION TOKEN ADMIN
+# ==============================================================================
+
+@admin.register(EmailVerificationToken)
+class EmailVerificationTokenAdmin(admin.ModelAdmin):
+    """Admin for Email Verification Token model."""
+    
+    list_display = [
+        'user', 'token_preview', 'created_at', 'expires_at', 
+        'is_used', 'used_at', 'is_expired'
+    ]
+    list_filter = ['is_used', 'created_at', 'expires_at']
+    search_fields = ['user__email', 'token']
+    readonly_fields = ['id', 'token', 'created_at', 'used_at']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('Token Information', {
+            'fields': ('id', 'user', 'token', 'is_used')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'expires_at', 'used_at')
+        }),
+    )
+    
+    def token_preview(self, obj):
+        """Display first 20 characters of token."""
+        return f"{obj.token[:20]}..." if obj.token else ""
+    token_preview.short_description = 'Token Preview'
+    
+    def is_expired(self, obj):
+        """Display if token is expired."""
+        from django.utils import timezone
+        expired = timezone.now() > obj.expires_at
+        color = 'red' if expired else 'green'
+        status = 'Expired' if expired else 'Active'
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{}</span>',
+            color, status
+        )
+    is_expired.short_description = 'Status'
+    
+    def get_queryset(self, request):
+        """Optimize queryset with select_related."""
+        return super().get_queryset(request).select_related('user')
+    
+    actions = ['cleanup_expired_tokens']
+    
+    def cleanup_expired_tokens(self, request, queryset):
+        """Admin action to cleanup expired tokens."""
+        count = EmailVerificationToken.cleanup_expired()
+        self.message_user(
+            request,
+            f"Successfully deleted {count} expired verification token(s)."
+        )
+    cleanup_expired_tokens.short_description = "Delete expired verification tokens"
