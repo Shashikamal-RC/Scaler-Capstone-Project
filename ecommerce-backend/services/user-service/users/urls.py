@@ -1,13 +1,19 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     RegisterView,
     LoginView,
     LogoutView,
     CurrentUserView,
+    UserAddressViewSet,
 )
 
 app_name = 'users'
+
+# Create router for ViewSets
+router = DefaultRouter()
+router.register(r'users/me/addresses', UserAddressViewSet, basename='user-address')
 
 urlpatterns = [
     # Authentication endpoints
@@ -18,4 +24,7 @@ urlpatterns = [
     
     # User profile endpoints
     path('users/me/', CurrentUserView.as_view(), name='current_user'),
+    
+    # Address endpoints (via router)
+    path('', include(router.urls)),
 ]

@@ -10,6 +10,9 @@ from .auth import (
 from .profile import (
     CurrentUserView,
 )
+from .address import (
+    UserAddressViewSet,
+)
 
 __all__ = [
     # Authentication
@@ -19,4 +22,7 @@ __all__ = [
     
     # Profile
     'CurrentUserView',
+    
+    # Address
+    'UserAddressViewSet',
 ]

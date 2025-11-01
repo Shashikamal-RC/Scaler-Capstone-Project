@@ -12,6 +12,10 @@ from .profile import (
     UserSerializer,
     UserUpdateSerializer,
 )
+from .address import (
+    UserAddressSerializer,
+    UserAddressCreateSerializer,
+)
 
 __all__ = [
     # Authentication
@@ -23,4 +27,8 @@ __all__ = [
     # Profile
     'UserSerializer',
     'UserUpdateSerializer',
+    
+    # Address
+    'UserAddressSerializer',
+    'UserAddressCreateSerializer',
 ]
