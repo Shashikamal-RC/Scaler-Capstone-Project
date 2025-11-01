@@ -25,6 +25,13 @@ from .verification import (
     EmailVerificationSerializer,
     ResendVerificationSerializer,
 )
+from .admin import (
+    AdminUserListSerializer,
+    AdminUserDetailSerializer,
+    RoleAssignmentSerializer,
+    UserStatusSerializer,
+    AdminCreateUserSerializer,
+)
 
 __all__ = [
     # Authentication
@@ -49,4 +56,11 @@ __all__ = [
     # Email Verification
     'EmailVerificationSerializer',
     'ResendVerificationSerializer',
+    
+    # Admin Management
+    'AdminUserListSerializer',
+    'AdminUserDetailSerializer',
+    'RoleAssignmentSerializer',
+    'UserStatusSerializer',
+    'AdminCreateUserSerializer',
 ]

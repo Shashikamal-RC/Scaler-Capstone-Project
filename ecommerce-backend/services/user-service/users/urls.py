@@ -12,6 +12,12 @@ from .views import (
     ChangePasswordView,
     VerifyEmailView,
     ResendVerificationEmailView,
+    AdminUserListView,
+    AdminUserDetailView,
+    AssignRoleView,
+    RemoveRoleView,
+    ActivateUserView,
+    DeactivateUserView,
 )
 
 app_name = 'users'
@@ -38,6 +44,14 @@ urlpatterns = [
     
     # User profile endpoints
     path('users/me/', CurrentUserView.as_view(), name='current_user'),
+    
+    # Admin user management endpoints
+    path('admin/users/', AdminUserListView.as_view(), name='admin_user_list'),
+    path('admin/users/<uuid:user_id>/', AdminUserDetailView.as_view(), name='admin_user_detail'),
+    path('admin/users/<uuid:user_id>/assign-role/', AssignRoleView.as_view(), name='assign_role'),
+    path('admin/users/<uuid:user_id>/remove-role/', RemoveRoleView.as_view(), name='remove_role'),
+    path('admin/users/<uuid:user_id>/activate/', ActivateUserView.as_view(), name='activate_user'),
+    path('admin/users/<uuid:user_id>/deactivate/', DeactivateUserView.as_view(), name='deactivate_user'),
     
     # Address endpoints (via router)
     path('', include(router.urls)),

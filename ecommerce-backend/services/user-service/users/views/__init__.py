@@ -22,6 +22,15 @@ from .verification import (
     VerifyEmailView,
     ResendVerificationEmailView,
 )
+from .admin import (
+    AdminUserListView,
+    AdminUserDetailView,
+    AssignRoleView,
+    RemoveRoleView,
+    ActivateUserView,
+    DeactivateUserView,
+    IsAdminUser,
+)
 
 __all__ = [
     # Authentication
@@ -43,4 +52,13 @@ __all__ = [
     # Email Verification
     'VerifyEmailView',
     'ResendVerificationEmailView',
+    
+    # Admin Management
+    'AdminUserListView',
+    'AdminUserDetailView',
+    'AssignRoleView',
+    'RemoveRoleView',
+    'ActivateUserView',
+    'DeactivateUserView',
+    'IsAdminUser',
 ]
