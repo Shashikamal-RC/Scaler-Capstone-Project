@@ -3,11 +3,11 @@ Authentication-related serializers.
 Handles user registration, login, and token generation.
 """
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 
 from ..models import User, UserRole
+from ..tokens import generate_tokens_with_roles
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -149,15 +149,10 @@ class TokenResponseSerializer(serializers.Serializer):
 
 def generate_tokens_for_user(user):
     """
-    Helper function to generate JWT tokens for a user.
+    Helper function to generate JWT tokens for a user with roles.
     Returns dict with access token, refresh token, and user data.
+    
+    DEPRECATED: Use generate_tokens_with_roles from users.tokens instead.
+    This is kept for backward compatibility.
     """
-    from .profile import UserSerializer
-    
-    refresh = RefreshToken.for_user(user)
-    
-    return {
-        'access': str(refresh.access_token),
-        'refresh': str(refresh),
-        'user': UserSerializer(user).data
-    }
+    return generate_tokens_with_roles(user)
