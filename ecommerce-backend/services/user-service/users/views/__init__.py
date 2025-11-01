@@ -13,6 +13,11 @@ from .profile import (
 from .address import (
     UserAddressViewSet,
 )
+from .password import (
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
+    ChangePasswordView,
+)
 
 __all__ = [
     # Authentication
@@ -25,4 +30,9 @@ __all__ = [
     
     # Address
     'UserAddressViewSet',
+    
+    # Password Management
+    'PasswordResetRequestView',
+    'PasswordResetConfirmView',
+    'ChangePasswordView',
 ]

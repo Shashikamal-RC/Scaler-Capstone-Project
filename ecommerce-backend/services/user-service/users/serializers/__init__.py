@@ -16,6 +16,11 @@ from .address import (
     UserAddressSerializer,
     UserAddressCreateSerializer,
 )
+from .password import (
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer,
+    ChangePasswordSerializer,
+)
 
 __all__ = [
     # Authentication
@@ -31,4 +36,9 @@ __all__ = [
     # Address
     'UserAddressSerializer',
     'UserAddressCreateSerializer',
+    
+    # Password Management
+    'PasswordResetRequestSerializer',
+    'PasswordResetConfirmSerializer',
+    'ChangePasswordSerializer',
 ]
