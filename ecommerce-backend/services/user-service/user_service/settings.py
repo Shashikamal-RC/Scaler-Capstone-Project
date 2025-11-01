@@ -11,16 +11,44 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # ==============================================================================
+# HELPER FUNCTIONS FOR DOCKER SECRETS
+# ==============================================================================
+
+def read_secret(secret_name, default=None):
+    """
+    Read Docker secret from file.
+    Falls back to environment variable, then default value.
+    """
+    # Check if running in Docker with secrets
+    secret_file = os.getenv(f'{secret_name}_FILE')
+    if secret_file and os.path.exists(secret_file):
+        with open(secret_file, 'r') as f:
+            return f.read().strip()
+    
+    # Fall back to environment variable
+    env_value = os.getenv(secret_name)
+    if env_value:
+        return env_value
+    
+    # Fall back to decouple config (reads from .env)
+    try:
+        return config(secret_name, default=default)
+    except:
+        return default
+
+
+# ==============================================================================
 # CORE SETTINGS
 # ==============================================================================
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-please-change-this-in-production')
+SECRET_KEY = read_secret('SECRET_KEY', default='django-insecure-please-change-this-in-production')
 
 DEBUG = config('DEBUG', default=True, cast=bool)
 
@@ -114,7 +142,7 @@ DATABASES = {
         'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
         'NAME': config('DB_NAME', default='user_service_db'),
         'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default='postgres'),
+        'PASSWORD': read_secret('DB_PASSWORD', default='postgres'),
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='5432'),
         'ATOMIC_REQUESTS': True,
@@ -185,8 +213,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # AUTHENTICATION & AUTHORIZATION
 # ==============================================================================
 
-# Custom User Model (we'll create this)
-# AUTH_USER_MODEL = 'users.User'
+# Custom User Model
+AUTH_USER_MODEL = 'users.User'
 
 # Password Hashing
 PASSWORD_HASHERS = [

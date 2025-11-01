@@ -50,7 +50,68 @@ user-service/
 
 ## ⚙️ Setup Instructions
 
-### Prerequisites
+### Option 1: Docker Setup (Recommended)
+
+**Prerequisites:**
+- Docker Desktop installed
+- Docker Compose installed
+
+**Steps:**
+
+1. **Clone Repository**
+```bash
+cd ecommerce-backend/services/user-service
+```
+
+2. **Build and Run with Docker Compose**
+```bash
+docker-compose up --build
+```
+
+This will:
+- Create PostgreSQL database container
+- Create Django application container
+- Run migrations automatically
+- Create default superuser (admin@example.com / admin123)
+- Create default roles (CUSTOMER, ADMIN, MANAGER)
+- Start the development server at `http://localhost:8000`
+
+3. **Access the Application**
+- API: `http://localhost:8000/api/`
+- Admin: `http://localhost:8000/admin/`
+- API Docs: `http://localhost:8000/api/docs/`
+
+**Docker Commands:**
+
+```bash
+# Start services
+docker-compose up
+
+# Start in detached mode
+docker-compose up -d
+
+# Stop services
+docker-compose down
+
+# View logs
+docker-compose logs -f web
+
+# Run Django commands
+docker-compose exec web python manage.py createsuperuser
+docker-compose exec web python manage.py shell
+
+# Rebuild containers
+docker-compose up --build
+
+# Remove volumes (clean database)
+docker-compose down -v
+```
+
+---
+
+### Option 2: Local Setup
+
+**Prerequisites:**
 
 - Python 3.12+
 - PostgreSQL 16.x
